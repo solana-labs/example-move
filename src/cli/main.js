@@ -4,6 +4,7 @@
  * @flow
  */
 import readline from 'readline-promise';
+// import {SSL_OP_EPHEMERAL_RSA} from 'constants';
 
 import {sleep} from '../util/sleep';
 
@@ -16,7 +17,10 @@ async function main() {
 
   rl.write(`Run a move program ...\n`);
 
-  // TODO
+  for (;;) {
+    // TODO
+    await sleep(250);
+  }
 }
 
 main()
