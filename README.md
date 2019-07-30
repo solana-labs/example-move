@@ -1,3 +1,5 @@
+# This is a work-in-progress
+
 [![Build status][travis-image]][travis-url]
 
 [travis-image]: https://api.travis-ci.org/solana-labs/example-move.svg?branch=master
@@ -48,7 +50,8 @@ $ npm run start
 ```
 
 ## Customizing the Program
-To customize Tic-Tac-Toe, make changes to the program in `program-bpf/src` and rebuild.
+To customize, make changes to the files under `/src`
+
 Now when you run `npm run start`, you should see your changes.
 
 To deploy a program with a different name, edit `src/server/config.js`.
