@@ -59,16 +59,21 @@ export class MoveLoader {
     payer: Account,
     bytes: Array<number>,
   ): Promise<PublicKey> {
-
-    const layout = lo.struct([
-      lo.u32('accountType'),
-      rustString('bytes'),
-    ]);
+    const layout = lo.struct([lo.u32('accountType'), rustString('bytes')]);
 
     const buffer = Buffer.alloc(4 + 8 + bytes.length); // accountType + bytes length + bytes
-    layout.encode({accountType: LibraAccountTypeCompiledProgram, bytes}, buffer);
+    layout.encode(
+      {accountType: LibraAccountTypeCompiledProgram, bytes},
+      buffer,
+    );
 
     const program = new Account();
-    return Loader.load(connection, payer, program, MoveLoader.programId(), buffer);
+    return Loader.load(
+      connection,
+      payer,
+      program,
+      MoveLoader.programId(),
+      buffer,
+    );
   }
 }

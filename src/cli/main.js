@@ -3,13 +3,20 @@
  *
  * @flow
  */
+
 import assert from 'assert';
-import {url, urlTls} from '../../url';
 import readline from 'readline-promise';
 import {Connection} from '@solana/web3.js';
-import {createAccount, createGenesis, getLibraBalance, mint, pay} from '../program/librapay';
+
+import {url, urlTls} from '../../url';
+import {
+  createAccount,
+  createGenesis,
+  getLibraBalance,
+  mint,
+  pay,
+} from '../program/librapay';
 import {newSystemAccountWithAirdrop} from '../util/new-system-account-with-airdrop';
-import {sleep} from '../util/sleep';
 
 async function main() {
   const rl = readline.createInterface({
@@ -27,7 +34,12 @@ async function main() {
 
   const amount_to_mint = 42;
   rl.write(`Mint ${amount_to_mint} libras..\n`);
-  const mintedAccount = await mint(connection, payerAccount, genesis, amount_to_mint);
+  const mintedAccount = await mint(
+    connection,
+    payerAccount,
+    genesis,
+    amount_to_mint,
+  );
   {
     const balance = await getLibraBalance(connection, mintedAccount.publicKey);
     rl.write(`Minted: ${mintedAccount.publicKey} Balance: ${balance}\n`);
@@ -38,13 +50,23 @@ async function main() {
   rl.write(`Payee:  ${payeeAccount.publicKey}\n`);
 
   const amount_to_pay = amount_to_mint / 3;
-  rl.write(`Pay ${amount_to_pay} Libras from Minted to Payee\n`)
-  await pay(connection, payerAccount, genesis, mintedAccount, payeeAccount, amount_to_pay);
+  rl.write(`Pay ${amount_to_pay} Libras from Minted to Payee\n`);
+  await pay(
+    connection,
+    payerAccount,
+    genesis,
+    mintedAccount,
+    payeeAccount,
+    amount_to_pay,
+  );
 
   {
     const balance = await getLibraBalance(connection, mintedAccount.publicKey);
     rl.write(`Minted: ${mintedAccount.publicKey} Balance: ${balance}\n`);
-    assert(balance == amount_to_mint - amount_to_pay, 'Wrong number of libras left after paying!');
+    assert(
+      balance == amount_to_mint - amount_to_pay,
+      'Wrong number of libras left after paying!',
+    );
   }
   {
     const balance = await getLibraBalance(connection, payeeAccount.publicKey);

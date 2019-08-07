@@ -55,9 +55,9 @@ export function createGenesis(amount: number): Buffer {
       instruction: Instruction.InvokeMain,
       length: 4 + 8, // command + amount
       command: Command.CreateGenesis,
-      amount
+      amount,
     },
-    buffer
+    buffer,
   );
   return buffer;
 }
@@ -65,12 +65,15 @@ export function createGenesis(amount: number): Buffer {
 /**
  * Returns the instruction data to call mint_to_address Move program
  */
-export function runMintToAddress(payeeAddress: PublicKey, amount: number): Buffer {
+export function runMintToAddress(
+  payeeAddress: PublicKey,
+  amount: number,
+): Buffer {
   const layout = lo.struct([
     lo.u32('instruction'),
     lo.nu64('length'),
     lo.u32('command'),
-    publicKeyLayout("senderAddress"),
+    publicKeyLayout('senderAddress'),
     lo.nu64('functionNameLength'),
     lo.blob(4, 'functionName'),
     lo.nu64('numArgs'),
@@ -84,18 +87,18 @@ export function runMintToAddress(payeeAddress: PublicKey, amount: number): Buffe
   layout.encode(
     {
       instruction: Instruction.InvokeMain,
-      length: 104, // TODO magic numbers: length of this specific run program command
+      length: 104, // length of this specific run program command
       command: Command.RunProgram,
-      senderAddress: getMintAddress().toBuffer(), // TODO does this result in the correct pubkey?
+      senderAddress: getMintAddress().toBuffer(),
       functionNameLength: 4,
-      functionName: Buffer.from("main", 'utf8'),
+      functionName: Buffer.from('main', 'utf8'),
       numArgs: 2,
       addressType: 1,
       payeeAddress: payeeAddress.toBuffer(),
       valueType: 0,
       amount,
     },
-    buffer
+    buffer,
   );
   return buffer;
 }
@@ -103,12 +106,16 @@ export function runMintToAddress(payeeAddress: PublicKey, amount: number): Buffe
 /**
  * Returns the instruction data to call the pay_from_sender Move program
  */
-export function runPayFromSender(senderAddress: PublicKey, payeeAddress: PublicKey, amount: number): Buffer {
+export function runPayFromSender(
+  senderAddress: PublicKey,
+  payeeAddress: PublicKey,
+  amount: number,
+): Buffer {
   const layout = lo.struct([
     lo.u32('instruction'),
     lo.nu64('length'),
     lo.u32('command'),
-    publicKeyLayout("senderAddress"),
+    publicKeyLayout('senderAddress'),
     lo.nu64('functionNameLength'),
     lo.blob(4, 'functionName'),
     lo.nu64('numArgs'),
@@ -122,18 +129,18 @@ export function runPayFromSender(senderAddress: PublicKey, payeeAddress: PublicK
   layout.encode(
     {
       instruction: Instruction.InvokeMain,
-      length: 104, // TODO magic numbers: length of this specific run program command
+      length: 104, // length of this specific run program command
       command: Command.RunProgram,
       senderAddress: senderAddress.toBuffer(),
       functionNameLength: 4,
-      functionName: Buffer.from("main", 'utf8'),
+      functionName: Buffer.from('main', 'utf8'),
       numArgs: 2,
       addressType: 1,
       payeeAddress: payeeAddress.toBuffer(),
       valueType: 0,
       amount,
     },
-    buffer
+    buffer,
   );
   return buffer;
 }
