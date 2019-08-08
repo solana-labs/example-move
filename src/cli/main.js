@@ -30,48 +30,54 @@ async function main() {
 
   const payerAccount = await newSystemAccountWithAirdrop(connection, 1000);
   const genesis = await createGenesis(connection, payerAccount, 1000000);
-  rl.write(`Genesis: ${genesis.publicKey}\n`);
+  rl.write(`Genesis: ${genesis.publicKey.toString()}\n`);
 
-  const amount_to_mint = 42;
-  rl.write(`Mint ${amount_to_mint} libras..\n`);
+  const amountToMint = 42;
+  rl.write(`Mint ${amountToMint} libras..\n`);
   const mintedAccount = await mint(
     connection,
     payerAccount,
     genesis,
-    amount_to_mint,
+    amountToMint,
   );
   {
     const balance = await getLibraBalance(connection, mintedAccount.publicKey);
-    rl.write(`Minted: ${mintedAccount.publicKey} Balance: ${balance}\n`);
-    assert(balance == amount_to_mint, 'Wrong number of libras minted!');
+    rl.write(
+      `Minted: ${mintedAccount.publicKey.toString()} Balance: ${balance}\n`,
+    );
+    assert(balance == amountToMint, 'Wrong number of libras minted!');
   }
 
   const payeeAccount = await createAccount(connection, payerAccount);
-  rl.write(`Payee:  ${payeeAccount.publicKey}\n`);
+  rl.write(`Payee:  ${payeeAccount.publicKey.toString()}\n`);
 
-  const amount_to_pay = amount_to_mint / 3;
-  rl.write(`Pay ${amount_to_pay} Libras from Minted to Payee\n`);
+  const amountToPay = amountToMint / 3;
+  rl.write(`Pay ${amountToPay} Libras from Minted to Payee\n`);
   await pay(
     connection,
     payerAccount,
     genesis,
     mintedAccount,
     payeeAccount,
-    amount_to_pay,
+    amountToPay,
   );
 
   {
     const balance = await getLibraBalance(connection, mintedAccount.publicKey);
-    rl.write(`Minted: ${mintedAccount.publicKey} Balance: ${balance}\n`);
+    rl.write(
+      `Minted: ${mintedAccount.publicKey.toString()} Balance: ${balance}\n`,
+    );
     assert(
-      balance == amount_to_mint - amount_to_pay,
+      balance == amountToMint - amountToPay,
       'Wrong number of libras left after paying!',
     );
   }
   {
     const balance = await getLibraBalance(connection, payeeAccount.publicKey);
-    rl.write(`Payee:  ${payeeAccount.publicKey} Balance: ${balance}\n`);
-    assert(balance == amount_to_pay, 'Wrong number of libras payed!');
+    rl.write(
+      `Payee:  ${payeeAccount.publicKey.toString()} Balance: ${balance}\n`,
+    );
+    assert(balance == amountToPay, 'Wrong number of libras payed!');
   }
 
   rl.write(`Success!\n`);

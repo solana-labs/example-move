@@ -68,12 +68,8 @@ export class MoveLoader {
     );
 
     const program = new Account();
-    return Loader.load(
-      connection,
-      payer,
-      program,
-      MoveLoader.programId,
-      [...buffer],
-    );
+    return Loader.load(connection, payer, program, MoveLoader.programId, [
+      ...buffer,
+    ]);
   }
 }
