@@ -167,7 +167,7 @@ export async function pay(
   senderAccount: Account,
   payeeAccount: Account,
   amount: number,
-) {
+  ): Promise<TransactionSignature> {
   const programPublicKey = await loadProgram(
     connection,
     path.join(__dirname, '../..', 'programs', 'pay_from_sender.out'),
@@ -205,7 +205,7 @@ export async function pay(
     ),
   });
 
-  sendAndConfirmTransaction(
+  return sendAndConfirmTransaction(
     `Run pay_from_sender`,
     connection,
     transaction,
