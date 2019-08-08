@@ -43,7 +43,7 @@ export class MoveLoader {
   /**
    * Public key that identifies the Move loader
    */
-  static programId(): PublicKey {
+  static get programId(): PublicKey {
     return new PublicKey('MoveLdr111111111111111111111111111111111111');
   }
 
@@ -72,8 +72,8 @@ export class MoveLoader {
       connection,
       payer,
       program,
-      MoveLoader.programId(),
-      buffer,
+      MoveLoader.programId,
+      [...buffer],
     );
   }
 }

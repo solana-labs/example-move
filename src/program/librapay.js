@@ -26,7 +26,7 @@ const sizeOfUserAccount = 2048; // TODO Generous estimate for most user accounts
  */
 async function loadProgram(
   connection: Connection,
-  path: String,
+  path: string,
 ): Promise<PublicKey> {
   console.log(`Loading program: ${path}`);
   const data = await fs.readFile(path);
@@ -52,7 +52,7 @@ export async function createAccount(
       newAccount.publicKey,
       1,
       size,
-      MoveLoader.programId(),
+      MoveLoader.programId,
     ),
   );
 
@@ -91,7 +91,7 @@ export async function createGenesis(
         isDebitable: true,
       },
     ],
-    programId: MoveLoader.programId(),
+    programId: MoveLoader.programId,
     data: InstructionData.createGenesis(amount),
   });
 
@@ -142,7 +142,7 @@ export async function mint(
         isDebitable: true,
       },
     ],
-    programId: MoveLoader.programId(),
+    programId: MoveLoader.programId,
     data: InstructionData.runMintToAddress(payeeAccount.publicKey, amount),
   });
 
@@ -168,7 +168,7 @@ export async function pay(
   senderAccount: Account,
   payeeAccount: Account,
   amount: number,
-): Promise<TransactionSignature> {
+) {
   const programPublicKey = await loadProgram(
     connection,
     path.join(__dirname, '../..', 'programs', 'pay_from_sender.out'),
@@ -198,7 +198,7 @@ export async function pay(
         isDebitable: true,
       },
     ],
-    programId: MoveLoader.programId(),
+    programId: MoveLoader.programId,
     data: InstructionData.runPayFromSender(
       senderAccount.publicKey,
       payeeAccount.publicKey,
@@ -206,7 +206,7 @@ export async function pay(
     ),
   });
 
-  return sendAndConfirmTransaction(
+  sendAndConfirmTransaction(
     `Run pay_from_sender`,
     connection,
     transaction,
