@@ -7,7 +7,6 @@ import {
   Transaction,
   SystemProgram,
 } from '@solana/web3.js';
-import type {TransactionSignature} from '@solana/web3.js';
 import path from 'path';
 import fs from 'mz/fs';
 import * as lo from 'buffer-layout';
