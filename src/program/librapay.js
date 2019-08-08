@@ -7,6 +7,7 @@ import {
   Transaction,
   SystemProgram,
 } from '@solana/web3.js';
+import type {TransactionSignature} from '@solana/web3.js';
 import path from 'path';
 import fs from 'mz/fs';
 import * as lo from 'buffer-layout';
@@ -167,7 +168,7 @@ export async function pay(
   senderAccount: Account,
   payeeAccount: Account,
   amount: number,
-  ): Promise<TransactionSignature> {
+): Promise<TransactionSignature> {
   const programPublicKey = await loadProgram(
     connection,
     path.join(__dirname, '../..', 'programs', 'pay_from_sender.out'),
