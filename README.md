@@ -24,10 +24,9 @@ $ npm install
 
 The example connects to a local Solana cluster by default.
 
-In order to enable on-chain Move loader/VM logs edit the local network script
-- Edit `node_modules/@solana/web3.js/bin/localnet.sh`
-  - Replace `RUST_LOG=${RUST_LOG:-solana=info}`
-  - With `RUST_LOG=${RUST_LOG:-solana=info,solana_move_loader_api=trace,solana_runtime=debug}`
+To enable on-chain Move loader/VM logs, set the `RUST_LOG` environment variable:
+
+`$ export RUST_LOG=${RUST_LOG:-solana=info,solana_move_loader_api=trace,solana_runtime=debug}`
 
 To start a local Solana cluster run:
 ```bash

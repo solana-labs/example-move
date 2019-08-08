@@ -10,6 +10,7 @@
 # Dependencies:
 #   - The Solana Libra repo must be cloned and the rust development environment setup
 #     - `$ git clone https://github.com/solana-labs/libra.git`
+#     - '$ git checkout v0.0.0'
 #     - `$ `./libra/scripts/dev_setup.sh`
 #
 # Examples:

@@ -16,7 +16,7 @@ import * as InstructionData from './instruction_data';
 import {sendAndConfirmTransaction} from '../util/send-and-confirm-transaction';
 import {MoveLoader} from './move-loader';
 
-const sizeOfGenesisAccount = 5176;
+const sizeOfGenesisAccount = 5176; // Known size, may change in the future
 const sizeOfUserAccount = 2048; // TODO Generous estimate for most user accounts
 
 /**
@@ -170,7 +170,7 @@ export async function pay(
 ): Promise<void> {
   const programPublicKey = await loadProgram(
     connection,
-    path.join(__dirname, '../..', 'programs', 'pay_from_sender.out'),
+    path.join(__dirname, '..', '..', 'programs', 'pay_from_sender.out'),
   );
 
   const transaction = new Transaction();

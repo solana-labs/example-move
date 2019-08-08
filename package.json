@@ -12,7 +12,6 @@
     "lint:watch": "watch 'npm run lint:fix' . --wait=1",
     "test": "npm run lint && npm run flow",
     "bpf-sdk:update": "node_modules/@solana/web3.js/bin/bpf-sdk-install.sh",
-    "build": "",
     "builddev": "webpack --mode=development",
     "dev": "set -ex; babel-node src/server/config; webpack-dev-server --config ./webpack.config.js --mode development",
     "localnet:update": "solana-localnet update",
@@ -20,7 +19,7 @@
     "localnet:down": "solana-localnet down",
     "localnet:logs": "solana-localnet logs -f",
     "pretty": "prettier --write '{,src/**/}*.js'",
-    "postinstall": "npm run build; npm run bpf-sdk:update"
+    "postinstall": "npm run bpf-sdk:update"
   },
   "keywords": [],
   "author": "",
