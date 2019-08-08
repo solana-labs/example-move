@@ -119,7 +119,7 @@ export async function mint(
 
   const programPublicKey = await loadProgram(
     connection,
-    path.join(__dirname, '../..', 'programs', 'mint_to_address.out'),
+    path.join(__dirname, '..', '..', 'programs', 'mint_to_address.out'),
   );
 
   const transaction = new Transaction();
