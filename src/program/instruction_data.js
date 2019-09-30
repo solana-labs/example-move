@@ -35,7 +35,7 @@ const Command = {
  * to a Solana public key
  */
 export function getMintAddress(): PublicKey {
-  return new PublicKey('1111111111111111111111111111111111111111111');
+  return new PublicKey(0);
 }
 
 /**
