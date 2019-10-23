@@ -24,8 +24,12 @@ export async function sendAndConfirmTransaction(
 ): Promise<void> {
   const when = Date.now();
 
-  if (payerAccount === null) {
-    payerAccount = await newSystemAccountWithAirdrop(connection, 1000);
+  if (!payerAccount) {
+    const [, feeCalculator] = await connection.getRecentBlockhash();
+    const fees = feeCalculator.lamportsPerSignature * 100; // wag
+    const newPayerAccount = await newSystemAccountWithAirdrop(connection, fees);
+    // eslint-disable-next-line require-atomic-updates
+    payerAccount = payerAccount || newPayerAccount;
   }
 
   const signature = await realSendAndConfirmTransaction(
