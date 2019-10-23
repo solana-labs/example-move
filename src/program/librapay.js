@@ -28,8 +28,16 @@ async function loadProgram(
   path: string,
 ): Promise<PublicKey> {
   console.log(`Loading program: ${path}`);
+  const NUM_RETRIES = 500; /* allow some number of retries */
+
   const data = await fs.readFile(path);
-  const loaderAccount = await newSystemAccountWithAirdrop(connection, 100000);
+
+  const [, feeCalculator] = await connection.getRecentBlockhash();
+  const fees =
+    feeCalculator.lamportsPerSignature *
+    (MoveLoader.getMinNumSignatures(data.length) + NUM_RETRIES);
+
+  const loaderAccount = await newSystemAccountWithAirdrop(connection, fees);
   return MoveLoader.load(connection, loaderAccount, data);
 }
 

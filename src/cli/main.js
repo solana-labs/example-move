@@ -5,7 +5,6 @@
  */
 
 import assert from 'assert';
-import readline from 'readline-promise';
 import {Connection} from '@solana/web3.js';
 
 import {url, urlTls} from '../../url';
@@ -19,21 +18,19 @@ import {
 import {newSystemAccountWithAirdrop} from '../util/new-system-account-with-airdrop';
 
 async function main() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    terminal: true,
-  });
-
   const connection = new Connection(url);
-  rl.write(`Using ${url} (${urlTls})\n`);
+  console.log('Using ' + url + ' (' + urlTls + ')');
 
-  const payerAccount = await newSystemAccountWithAirdrop(connection, 1000);
+  const [, feeCalculator] = await connection.getRecentBlockhash();
+  const fees = feeCalculator.lamportsPerSignature * 6; // 1 payer + 5 signers
+  const payerAccount = await newSystemAccountWithAirdrop(connection, fees);
+
   const genesis = await createGenesis(connection, payerAccount, 1000000);
-  rl.write(`Genesis: ${genesis.publicKey.toString()}\n`);
+  console.log('Genesis: ' + genesis.publicKey.toString());
+
 
   const amountToMint = 42;
-  rl.write(`Mint ${amountToMint} libras..\n`);
+  console.log('Mint ' + amountToMint + ' libras..');
   const mintedAccount = await mint(
     connection,
     payerAccount,
@@ -42,17 +39,15 @@ async function main() {
   );
   {
     const balance = await getLibraBalance(connection, mintedAccount.publicKey);
-    rl.write(
-      `Minted: ${mintedAccount.publicKey.toString()} Balance: ${balance}\n`,
-    );
+    console.log('Minted: ' + mintedAccount.publicKey.toString() + ' Balance ' + balance);
     assert(balance == amountToMint, 'Wrong number of libras minted!');
   }
 
   const payeeAccount = await createAccount(connection, payerAccount);
-  rl.write(`Payee:  ${payeeAccount.publicKey.toString()}\n`);
+  console.log('Payee: ' + payeeAccount.publicKey.toString());
 
   const amountToPay = amountToMint / 3;
-  rl.write(`Pay ${amountToPay} Libras from Minted to Payee\n`);
+  console.log('Pay: ' + amountToPay + ' Libras from Minted to Payee');
   await pay(
     connection,
     payerAccount,
@@ -64,9 +59,7 @@ async function main() {
 
   {
     const balance = await getLibraBalance(connection, mintedAccount.publicKey);
-    rl.write(
-      `Minted: ${mintedAccount.publicKey.toString()} Balance: ${balance}\n`,
-    );
+    console.log('Minted: ' + mintedAccount.publicKey.toString() + ' Balance: ' + balance);
     assert(
       balance == amountToMint - amountToPay,
       'Wrong number of libras left after paying!',
@@ -74,13 +67,11 @@ async function main() {
   }
   {
     const balance = await getLibraBalance(connection, payeeAccount.publicKey);
-    rl.write(
-      `Payee:  ${payeeAccount.publicKey.toString()} Balance: ${balance}\n`,
-    );
+    console.log('Payee: ' + payeeAccount.publicKey.toString() + ' Balance: ' + balance);
     assert(balance == amountToPay, 'Wrong number of libras payed!');
   }
 
-  rl.write(`Success!\n`);
+  console.log('Success');
 }
 
 main()

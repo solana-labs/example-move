@@ -48,6 +48,16 @@ export class MoveLoader {
   }
 
   /**
+   * Minimum number of signatures required to load a program not including
+   * retries
+   *
+   * Can be used to calculate transaction fees
+   */
+  static getMinNumSignatures(dataLength: number): number {
+    return Loader.getMinNumSignatures(dataLength);
+  }
+
+  /**
    * Load a Move program
    *
    * @param connection The connection to use
