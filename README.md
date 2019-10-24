@@ -5,6 +5,8 @@
 
 # Move on Solana
 
+* **Note: Move on Solana is under construction and therefore this example project is not currently functioning.  Please use it as a learning tool or a reference until construction is complete**
+
 This project demonstrates how to use the [Solana Javascript API](https://github.com/solana-labs/solana-web3.js)
 to build, deploy, and interact with Libra Move programs on the Solana blockchain.
 
