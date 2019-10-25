@@ -10,14 +10,20 @@
 This project demonstrates how to use the [Solana Javascript API](https://github.com/solana-labs/solana-web3.js)
 to build, deploy, and interact with Libra Move programs on the Solana blockchain.
 
+There is a wealth of information about Libra and the Move language on the [Libra developers page](https://developers.libra.org/docs/welcome-to-libra)
+
+## What's here
+
 The project comprises of:
 
-* A library to interact with the on-chain Move loader and virtual machine to create Genesis' accounts and mint and pay Libra coins: `src/program`
-* Command-line front-end that exercises the LibraPay library: `src/cli/`
+* A `LibraPay` library to interact with the on-chain Move loader and virtual machine to create Genesis accounts, and mint and pay Libra coins: [`./src/program`](https://github.com/solana-labs/example-move/tree/master/src/program)
+* Move programs used to mint and pay Libra coins: [`./programs`](https://github.com/solana-labs/example-move/tree/master/programs)
+* Command-line front-end that demonstrates how to use the `LibraPay` library: [`src/cli/`](https://github.com/solana-labs/example-move/tree/master/src/cli)
 
-## Getting Started
+## Getting started
 
 First fetch the npm dependencies, including `@solana/web3.js`, by running:
+
 ```sh
 $ npm install
 ```
@@ -55,6 +61,6 @@ $ npm run start
 ```
 
 ## Customizing the Program
-To customize, make changes to the files under `/src`
+To customize, make changes to the files under [`/src`](https://github.com/solana-labs/example-move/tree/master/src)
 
-Now when you run `npm run start`, you should see the results of your changes.
+Now when you run `npm run start` again you should see the results of your changes.
