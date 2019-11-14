@@ -8,34 +8,43 @@
 import * as lo from 'buffer-layout';
 import {PublicKey} from '@solana/web3.js';
 
-// TODO pull this from the SDK
-const publicKeyLayout = (property: string = 'publicKey'): Object => {
+export const publicKeyLayout = (property: string = 'publicKey'): Object => {
   return lo.blob(32, property);
 };
 
 /**
- * Solana on-chain Loader Instructions
+ * Solana on-chain Move script or module loader instructions
  */
-const Instruction = {
-  Write: 0, // Write program data chunk
-  Finalize: 1, // Finalize a program
-  InvokeMain: 2, // Invoke a program
+export const Instruction = {
+  Write: 0, // Write data chunk
+  Finalize: 1, // Finalize
+  InvokeMain: 2, // Create a genesis or invoke a script
 };
 
 /**
- * Solana on-chain Move Loader commands
+ * Libra Transaction Argument types
+ */
+export const TransactionArgument = {
+  U64: 0,
+  Address: 1,
+  ByteArray: 2,
+  String: 3,
+};
+
+/**
+ * Solana on-chain InvokeMain Move loader commands
  */
 const Command = {
   CreateGenesis: 0, // Create genesis account
-  RunProgram: 1, // Run a program
+  RunScript: 1, // Run a script
 };
 
 /**
- * Libra's mint account address is all zeros, structurally equivalent
+ * Libra's mint account address structurally equivalent
  * to a Solana public key
  */
-export function getMintAddress(): PublicKey {
-  return new PublicKey(0);
+function getMintAddress(): PublicKey {
+  return new PublicKey('1111111111111111111111111111GKSfy');
 }
 
 /**
@@ -63,10 +72,45 @@ export function createGenesis(amount: number): Buffer {
 }
 
 /**
- * Returns the instruction data to call mint_to_address Move program
+ * Runs a move script
+ */
+export function runScript(
+  senderPublicKey: PublicKey,
+  functionName: string,
+  args: ?Buffer,
+): Buffer {
+  const layout = lo.struct([
+    lo.u32('instruction'),
+    lo.nu64('length'),
+    lo.u32('command'),
+    publicKeyLayout('senderAddress'),
+    lo.nu64('functionNameLength'),
+    lo.blob(4, 'functionName'),
+  ]);
+
+  var buffer = Buffer.alloc(layout.span);
+  layout.encode(
+    {
+      instruction: Instruction.InvokeMain,
+      length: 92, // TODO calculate
+      command: Command.RunScript,
+      senderAddress: senderPublicKey.toBuffer(),
+      functionNameLength: 4,
+      functionName: Buffer.from(functionName, 'utf8'),
+    },
+    buffer,
+  );
+  if (args) {
+    buffer = Buffer.concat([buffer, args]);
+  }
+  return buffer;
+}
+
+/**
+ * Returns the instruction data to call mint_to_address Move script
  */
 export function runMintToAddress(
-  payeeAddress: PublicKey,
+  payeePublicKey: PublicKey,
   amount: number,
 ): Buffer {
   const layout = lo.struct([
@@ -87,15 +131,15 @@ export function runMintToAddress(
   layout.encode(
     {
       instruction: Instruction.InvokeMain,
-      length: 104, // length of this specific run program command
-      command: Command.RunProgram,
+      length: 104, // length of this is specific run script command
+      command: Command.RunScript,
       senderAddress: getMintAddress().toBuffer(),
       functionNameLength: 4,
       functionName: Buffer.from('main', 'utf8'),
       numArgs: 2,
-      addressType: 1,
-      payeeAddress: payeeAddress.toBuffer(),
-      valueType: 0,
+      addressType: TransactionArgument.Address,
+      payeeAddress: payeePublicKey.toBuffer(),
+      valueType: TransactionArgument.U64,
       amount,
     },
     buffer,
@@ -104,11 +148,11 @@ export function runMintToAddress(
 }
 
 /**
- * Returns the instruction data to call the pay_from_sender Move program
+ * Returns the instruction data to call the pay_from_sender Move script
  */
 export function runPayFromSender(
-  senderAddress: PublicKey,
-  payeeAddress: PublicKey,
+  senderPublicKey: PublicKey,
+  payeePublicKey: PublicKey,
   amount: number,
 ): Buffer {
   const layout = lo.struct([
@@ -129,15 +173,15 @@ export function runPayFromSender(
   layout.encode(
     {
       instruction: Instruction.InvokeMain,
-      length: 104, // length of this specific run program command
-      command: Command.RunProgram,
-      senderAddress: senderAddress.toBuffer(),
+      length: 104, // length of this is specific run script command
+      command: Command.RunScript,
+      senderAddress: senderPublicKey.toBuffer(),
       functionNameLength: 4,
       functionName: Buffer.from('main', 'utf8'),
       numArgs: 2,
-      addressType: 1,
-      payeeAddress: payeeAddress.toBuffer(),
-      valueType: 0,
+      addressType: TransactionArgument.Address,
+      payeeAddress: payeePublicKey.toBuffer(),
+      valueType: TransactionArgument.U64,
       amount,
     },
     buffer,

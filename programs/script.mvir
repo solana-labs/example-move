@@ -1,0 +1,10 @@
+import 0x0.LibraAccount;
+import 0x0.LibraCoin;
+import 0x1b2f49096e3e5dbd0fcfa9c0c0cd92d9ab3b21544b34d5dd4a65d98b878b9922.M;
+
+main(payee: address) {
+    let amount: u64;
+    amount = M.universal_truth();
+    LibraAccount.pay_from_sender(move(payee), move(amount));
+    return;
+}

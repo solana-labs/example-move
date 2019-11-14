@@ -8,38 +8,14 @@ import {
   SystemProgram,
 } from '@solana/web3.js';
 import path from 'path';
-import fs from 'mz/fs';
 import * as lo from 'buffer-layout';
 
-import {newSystemAccountWithAirdrop} from '../util/new-system-account-with-airdrop';
 import * as InstructionData from './instruction_data';
 import {sendAndConfirmTransaction} from '../util/send-and-confirm-transaction';
-import {MoveLoader} from './move-loader';
+import {MoveLoader, AccountType} from './move-loader';
 
-const sizeOfGenesisAccount = 5176; // Known size, may change in the future
+const sizeOfGenesisAccount = 9377; // Known size, may change in the future
 const sizeOfUserAccount = 2048; // TODO Generous estimate for most user accounts
-
-/**
- * Load a new instance of a Move program on-chain.
- * Returns the new program account.
- */
-async function loadProgram(
-  connection: Connection,
-  path: string,
-): Promise<PublicKey> {
-  console.log(`Loading program: ${path}`);
-  const NUM_RETRIES = 500; /* allow some number of retries */
-
-  const data = await fs.readFile(path);
-
-  const [, feeCalculator] = await connection.getRecentBlockhash();
-  const fees =
-    feeCalculator.lamportsPerSignature *
-    (MoveLoader.getMinNumSignatures(data.length) + NUM_RETRIES);
-
-  const loaderAccount = await newSystemAccountWithAirdrop(connection, fees);
-  return MoveLoader.load(connection, loaderAccount, data);
-}
 
 /**
  * Create a new account owned by the Move loader program.
@@ -78,10 +54,10 @@ export async function createAccount(
  * Create and populate a new Libra Genesis account.
  * Returns the new account.
  */
-export async function createGenesis(
+export async function createGenesisAccount(
   connection: Connection,
   payerAccount: Account,
-  amount: number,
+  microlibras: number,
 ): Promise<Account> {
   const genesisAccount = await createAccount(
     connection,
@@ -95,11 +71,11 @@ export async function createGenesis(
       {
         pubkey: genesisAccount.publicKey,
         isSigner: true,
-        isDebitable: true,
+        isWritable: true,
       },
     ],
     programId: MoveLoader.programId,
-    data: InstructionData.createGenesis(amount),
+    data: InstructionData.createGenesis(microlibras),
   });
 
   await sendAndConfirmTransaction(
@@ -114,6 +90,105 @@ export async function createGenesis(
 }
 
 /**
+ * Load a new instance of a Move program on-chain.
+ * Returns the new program account.
+ */
+export async function publishModule(
+  connection: Connection,
+  moduleAccount: Account,
+  path: string,
+): Promise<void> {
+  try {
+    await connection.getAccountInfo(moduleAccount.publicKey);
+  } catch (e) {
+    return await MoveLoader.load(
+      connection,
+      AccountType.CompiledModule,
+      moduleAccount,
+      path,
+    );
+  }
+  console.log('Warning: module already published or account already exists');
+}
+
+/**
+ * Load a new instance of a Move program on-chain.
+ * Returns the new program account.
+ */
+export async function loadScript(
+  connection: Connection,
+  scriptAccount: Account,
+  path: string,
+): Promise<void> {
+  return await MoveLoader.load(
+    connection,
+    AccountType.CompiledScript,
+    scriptAccount,
+    path,
+  );
+}
+
+/**
+ * Mint tokens into a new Libra account.
+ * Returns the new account
+ */
+export async function runScript(
+  connection: Connection,
+  scriptAccount: PublicKey,
+  functionName: string,
+  payerAccount: Account,
+  genesisAccount: Account,
+  senderAccount: Account,
+  additionalKeys: Array<{
+    pubkey: PublicKey,
+    isSigner: boolean,
+    isWritable: boolean,
+  }>,
+  additionalSignerAccounts: Array<Account>,
+  args: ?Buffer,
+): Promise<void> {
+  const transaction = new Transaction();
+  let keys = [
+    {
+      pubkey: scriptAccount,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: genesisAccount.publicKey,
+      isSigner: false,
+      isWritable: false,
+    },
+    {
+      pubkey: senderAccount.publicKey,
+      isSigner: true,
+      isWritable: true,
+    },
+  ];
+  keys = keys.concat(additionalKeys);
+
+  transaction.add({
+    keys,
+    programId: MoveLoader.programId,
+    data: InstructionData.runScript(
+      senderAccount.publicKey,
+      functionName,
+      args,
+    ),
+  });
+
+  let signerAccounts = [payerAccount, senderAccount];
+  signerAccounts = signerAccounts.concat(additionalSignerAccounts);
+
+  await sendAndConfirmTransaction(
+    `Run scriptAccount`,
+    connection,
+    transaction,
+    ...signerAccounts,
+  );
+}
+
+/**
  * Mint tokens into a new Libra account.
  * Returns the new account
  */
@@ -121,36 +196,38 @@ export async function mint(
   connection: Connection,
   payerAccount: Account,
   genesisAccount: Account,
-  amount: number,
+  microlibras: number,
 ): Promise<Account> {
   const payeeAccount = await createAccount(connection, payerAccount);
 
-  const programPublicKey = await loadProgram(
+  let scriptAccount = new Account();
+  await loadScript(
     connection,
-    path.join(__dirname, '..', '..', 'programs', 'mint_to_address.out'),
+    scriptAccount,
+    path.join(__dirname, '..', '..', 'programs', 'mint_to_address.mv'),
   );
 
   const transaction = new Transaction();
   transaction.add({
     keys: [
       {
-        pubkey: programPublicKey,
+        pubkey: scriptAccount.publicKey,
         isSigner: false,
-        isDebitable: false,
+        isWritable: false,
       },
       {
         pubkey: genesisAccount.publicKey,
         isSigner: true,
-        isDebitable: true,
+        isWritable: true,
       },
       {
         pubkey: payeeAccount.publicKey,
         isSigner: true,
-        isDebitable: true,
+        isWritable: true,
       },
     ],
     programId: MoveLoader.programId,
-    data: InstructionData.runMintToAddress(payeeAccount.publicKey, amount),
+    data: InstructionData.runMintToAddress(payeeAccount.publicKey, microlibras),
   });
 
   await sendAndConfirmTransaction(
@@ -172,54 +249,56 @@ export async function pay(
   connection: Connection,
   payerAccount: Account,
   genesisAccount: Account,
-  senderAccount: Account,
+  senderAccountAccount: Account,
   payeeAccount: Account,
-  amount: number,
+  microlibras: number,
 ): Promise<void> {
-  const programPublicKey = await loadProgram(
+  let scriptAccount = new Account();
+  await loadScript(
     connection,
-    path.join(__dirname, '..', '..', 'programs', 'pay_from_sender.out'),
+    scriptAccount,
+    path.join(__dirname, '..', '..', 'programs', 'pay_from_sender.mv'),
   );
 
   const transaction = new Transaction();
   transaction.add({
     keys: [
       {
-        pubkey: programPublicKey,
+        pubkey: scriptAccount.publicKey,
         isSigner: false,
-        isDebitable: false,
+        isWritable: false,
       },
       {
         pubkey: genesisAccount.publicKey,
         isSigner: false,
-        isDebitable: true,
+        isWritable: true,
       },
       {
-        pubkey: senderAccount.publicKey,
+        pubkey: senderAccountAccount.publicKey,
         isSigner: true,
-        isDebitable: true,
+        isWritable: true,
       },
       {
         pubkey: payeeAccount.publicKey,
         isSigner: true,
-        isDebitable: true,
+        isWritable: true,
       },
     ],
     programId: MoveLoader.programId,
     data: InstructionData.runPayFromSender(
-      senderAccount.publicKey,
+      senderAccountAccount.publicKey,
       payeeAccount.publicKey,
-      amount,
+      microlibras,
     ),
   });
 
   return sendAndConfirmTransaction(
-    `Run pay_from_sender`,
+    `Run pay_from_senderAccount`,
     connection,
     transaction,
     payerAccount,
     genesisAccount,
-    senderAccount,
+    senderAccountAccount,
     payeeAccount,
   );
 }

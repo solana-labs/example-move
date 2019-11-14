@@ -10,8 +10,9 @@
 # Dependencies:
 #   - The Solana Libra repo must be cloned and the rust development environment setup
 #     - `$ git clone https://github.com/solana-labs/libra.git`
-#     - '$ git checkout v0.0.0'
-#     - `$ `./libra/scripts/dev_setup.sh`
+#     - '$ cd libra'
+#     - '$ git co solana-0.0.1'
+#     - `$ `./scripts/dev_setup.sh`
 #
 # Examples:
 #  - `$ ./do.sh build ../../libra mint_to_address`
@@ -31,22 +32,31 @@ Supported actions:
 EOF
 }
 
+libra_path=../../solana-libra
+libra_compiler="cargo run --manifest-path="$libra_path/Cargo.toml" -p solana_libra_compiler --"
+
+
 perform_action() {
     set -e
     case "$1" in
     build)
-        if [ -z "$2" ]; then
-            echo "Error: Path to the local libra repo is required"
+        eval "$libra_compiler" mint_to_address.mvir
+        eval "$libra_compiler" pay_from_sender.mvir
+
+        eval "$libra_compiler" --address 1b2f49096e3e5dbd0fcfa9c0c0cd92d9ab3b21544b34d5dd4a65d98b878b9922 --module module.mvir
+        module=`cat module.mv`
+        re='{"code":(.*)}'
+        if [[ $module =~ $re ]]; then
+            echo "[${BASH_REMATCH[1]}]" > deps.json
+        else
+            echo "Failed to match module bytes"
             exit
         fi
-        if [ -z "$3" ]; then
-            echo "Error: Name of program to build is required"
-            exit
-        fi
-         cargo run --manifest-path="$2"/Cargo.toml -p solana_libra_compiler -- -o "$3".out "$3".mvir
+        eval "$libra_compiler" --deps deps.json script.mvir
         ;;
     clean)
-         rm *.out
+         rm *.mv
+         rm *.json
         ;;
     help)
         usage
