@@ -161,7 +161,7 @@ export async function runScript(
       isSigner: true,
       isWritable: true,
     },
-    ...additionalKeys
+    ...additionalKeys,
   ];
 
   transaction.add({
@@ -174,9 +174,13 @@ export async function runScript(
     ),
   });
 
-  const signerAccounts = [payerAccount, senderAccount, ...additionalSignerAccounts];
+  const signerAccounts = [
+    payerAccount,
+    senderAccount,
+    ...additionalSignerAccounts,
+  ];
 
-  return sendAndConfirmTransaction(
+  await sendAndConfirmTransaction(
     `Run scriptAccount`,
     connection,
     transaction,
