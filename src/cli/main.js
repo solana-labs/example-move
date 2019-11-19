@@ -195,14 +195,14 @@ async function main() {
   const enlightenedAccount = await createAccount(connection, payerAccount);
   const argsLayout = lo.struct([
     lo.nu64('numArgs'),
-    lo.u32('addressType'),
+    lo.u32('argType'),
     publicKeyLayout('payeeAccountAddress'),
   ]);
   var args = Buffer.alloc(argsLayout.span);
   argsLayout.encode(
     {
       numArgs: 1,
-      addressType: TransactionArgument.Address,
+      argType: TransactionArgument.Address,
       payeeAccountAddress: enlightenedAccount.publicKey.toBuffer(),
     },
     args,

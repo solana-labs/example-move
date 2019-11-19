@@ -81,22 +81,27 @@ export function runScript(
 ): Buffer {
   const layout = lo.struct([
     lo.u32('instruction'),
-    lo.nu64('length'),
+    lo.nu64('commandLength'),
     lo.u32('command'),
     publicKeyLayout('senderAddress'),
     lo.nu64('functionNameLength'),
-    lo.blob(4, 'functionName'),
+    lo.blob(functionName.length, 'functionName'),
   ]);
 
+  // 12 = 4 bytes for instruction and 8 for length itself
+  let commandLength = layout.span - 12;
+  if (args) {
+    commandLength += args.length;
+  }
   var buffer = Buffer.alloc(layout.span);
   layout.encode(
     {
       instruction: Instruction.InvokeMain,
-      length: 92, // TODO calculate
+      commandLength: commandLength,
       command: Command.RunScript,
       senderAddress: senderPublicKey.toBuffer(),
-      functionNameLength: 4,
-      functionName: Buffer.from(functionName, 'utf8'),
+      functionNameLength: functionName.length,
+      functionName: Buffer.from(functionName, 'ascii'),
     },
     buffer,
   );
@@ -135,7 +140,7 @@ export function runMintToAddress(
       command: Command.RunScript,
       senderAddress: getMintAddress().toBuffer(),
       functionNameLength: 4,
-      functionName: Buffer.from('main', 'utf8'),
+      functionName: Buffer.from('main', 'ascii'),
       numArgs: 2,
       addressType: TransactionArgument.Address,
       payeeAddress: payeePublicKey.toBuffer(),
@@ -177,7 +182,7 @@ export function runPayFromSender(
       command: Command.RunScript,
       senderAddress: senderPublicKey.toBuffer(),
       functionNameLength: 4,
-      functionName: Buffer.from('main', 'utf8'),
+      functionName: Buffer.from('main', 'ascii'),
       numArgs: 2,
       addressType: TransactionArgument.Address,
       payeeAddress: payeePublicKey.toBuffer(),

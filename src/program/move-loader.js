@@ -20,12 +20,12 @@ export const rustString = (property: string = 'string') => {
 
   rsl.decode = (buffer, offset) => {
     const data = _decode(buffer, offset);
-    return data.chars.toString('utf8');
+    return data.chars.toString('ascii');
   };
 
   rsl.encode = (str, buffer, offset) => {
     const data = {
-      chars: Buffer.from(str, 'utf8'),
+      chars: Buffer.from(str, 'ascii'),
     };
     return _encode(data, buffer, offset);
   };

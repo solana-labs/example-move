@@ -90,8 +90,7 @@ export async function createGenesisAccount(
 }
 
 /**
- * Load a new instance of a Move program on-chain.
- * Returns the new program account.
+ * Publishes a Move module on-chain
  */
 export async function publishModule(
   connection: Connection,
@@ -101,7 +100,7 @@ export async function publishModule(
   try {
     await connection.getAccountInfo(moduleAccount.publicKey);
   } catch (e) {
-    return await MoveLoader.load(
+    return MoveLoader.load(
       connection,
       AccountType.CompiledModule,
       moduleAccount,
@@ -113,7 +112,6 @@ export async function publishModule(
 
 /**
  * Load a new instance of a Move program on-chain.
- * Returns the new program account.
  */
 export async function loadScript(
   connection: Connection,
@@ -129,12 +127,11 @@ export async function loadScript(
 }
 
 /**
- * Mint tokens into a new Libra account.
- * Returns the new account
+ * Runs a user script
  */
 export async function runScript(
   connection: Connection,
-  scriptAccount: PublicKey,
+  scriptPublicKey: PublicKey,
   functionName: string,
   payerAccount: Account,
   genesisAccount: Account,
@@ -148,9 +145,9 @@ export async function runScript(
   args: ?Buffer,
 ): Promise<void> {
   const transaction = new Transaction();
-  let keys = [
+  const keys = [
     {
-      pubkey: scriptAccount,
+      pubkey: scriptPublicKey,
       isSigner: false,
       isWritable: false,
     },
@@ -164,8 +161,8 @@ export async function runScript(
       isSigner: true,
       isWritable: true,
     },
+    ...additionalKeys
   ];
-  keys = keys.concat(additionalKeys);
 
   transaction.add({
     keys,
@@ -177,10 +174,9 @@ export async function runScript(
     ),
   });
 
-  let signerAccounts = [payerAccount, senderAccount];
-  signerAccounts = signerAccounts.concat(additionalSignerAccounts);
+  const signerAccounts = [payerAccount, senderAccount, ...additionalSignerAccounts];
 
-  await sendAndConfirmTransaction(
+  return sendAndConfirmTransaction(
     `Run scriptAccount`,
     connection,
     transaction,
@@ -249,7 +245,7 @@ export async function pay(
   connection: Connection,
   payerAccount: Account,
   genesisAccount: Account,
-  senderAccountAccount: Account,
+  senderAccount: Account,
   payeeAccount: Account,
   microlibras: number,
 ): Promise<void> {
@@ -271,10 +267,10 @@ export async function pay(
       {
         pubkey: genesisAccount.publicKey,
         isSigner: false,
-        isWritable: true,
+        isWritable: false,
       },
       {
-        pubkey: senderAccountAccount.publicKey,
+        pubkey: senderAccount.publicKey,
         isSigner: true,
         isWritable: true,
       },
@@ -286,7 +282,7 @@ export async function pay(
     ],
     programId: MoveLoader.programId,
     data: InstructionData.runPayFromSender(
-      senderAccountAccount.publicKey,
+      senderAccount.publicKey,
       payeeAccount.publicKey,
       microlibras,
     ),
@@ -298,7 +294,7 @@ export async function pay(
     transaction,
     payerAccount,
     genesisAccount,
-    senderAccountAccount,
+    senderAccount,
     payeeAccount,
   );
 }

@@ -15,7 +15,7 @@
 #     - `$ `./scripts/dev_setup.sh`
 #
 # Examples:
-#  - `$ ./do.sh build ../../libra mint_to_address`
+#  - `$ ./do.sh build ../../libra
 #  - `$ ./do.sh clean`
 
 cd "$(dirname "$0")"
@@ -33,13 +33,14 @@ EOF
 }
 
 libra_path=../../solana-libra
-libra_compiler="cargo run --manifest-path="$libra_path/Cargo.toml" -p solana_libra_compiler --"
 
 
 perform_action() {
     set -e
     case "$1" in
     build)
+        libra_compiler="cargo run --manifest-path=$2/Cargo.toml -p solana_libra_compiler --"
+        
         eval "$libra_compiler" mint_to_address.mvir
         eval "$libra_compiler" pay_from_sender.mvir
 
@@ -52,6 +53,7 @@ perform_action() {
             echo "Failed to match module bytes"
             exit
         fi
+        
         eval "$libra_compiler" --deps deps.json script.mvir
         ;;
     clean)
@@ -71,4 +73,4 @@ perform_action() {
 }
 
 set -e
-perform_action "$1" "$2" "$3"
+perform_action "$1" "$2"
