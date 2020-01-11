@@ -86,7 +86,8 @@ export class MoveLoader {
     const [, feeCalculator] = await connection.getRecentBlockhash();
     const fees =
       feeCalculator.lamportsPerSignature *
-      (MoveLoader.getMinNumSignatures(bytes.length) + NUM_RETRIES);
+        (MoveLoader.getMinNumSignatures(bytes.length) + NUM_RETRIES) +
+      (await connection.getMinimumBalanceForRentExemption(bytes.length));
     const payer = await newSystemAccountWithAirdrop(connection, fees);
 
     const layout = lo.struct([lo.u32('accountType'), rustString('bytes')]);
