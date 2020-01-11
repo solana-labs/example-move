@@ -107,9 +107,8 @@ async function main() {
   const connection = new Connection(url, 'recent');
   console.log('Using ' + url + ' (' + urlTls + ')');
 
-  const [, feeCalculator] = await connection.getRecentBlockhash();
-  const fees = feeCalculator.lamportsPerSignature * 100; // Ask for a ton
-  const payerAccount = await newSystemAccountWithAirdrop(connection, fees);
+  const balance = 1000000000; // Ask for a ton
+  const payerAccount = await newSystemAccountWithAirdrop(connection, balance);
 
   // Create a Libra Genesis account
 

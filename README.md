@@ -34,7 +34,7 @@ The example connects to a local Solana cluster by default.
 
 To enable on-chain Move loader/VM logs, set the `RUST_LOG` environment variable:
 
-`$ export RUST_LOG=${RUST_LOG:-solana=info,solana_move_loader_api=trace,solana_runtime=debug}`
+`$ export RUST_LOG=solana_runtime::native_loader,=warn,solana_runtime::bank=debug,solana_bpf_loader=debug,solana_rbpf=debug`
 
 To start a local Solana cluster run:
 ```bash

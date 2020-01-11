@@ -33,7 +33,7 @@ export async function createAccount(
     SystemProgram.createAccount(
       payerAccount.publicKey,
       newAccount.publicKey,
-      1,
+      5000, // enough to cover rent
       size,
       MoveLoader.programId,
     ),

@@ -18,7 +18,7 @@ export const publicKeyLayout = (property: string = 'publicKey'): Object => {
 export const Instruction = {
   Write: 0, // Write data chunk
   Finalize: 1, // Finalize
-  InvokeMain: 2, // Create a genesis or invoke a script
+  CreateGenesis: 2, // Create genesis account
 };
 
 /**
@@ -34,9 +34,8 @@ export const TransactionArgument = {
 /**
  * Solana on-chain InvokeMain Move loader commands
  */
-const Command = {
-  CreateGenesis: 0, // Create genesis account
-  RunScript: 1, // Run a script
+const Executable = {
+  RunScript: 0, // Run a script
 };
 
 /**
@@ -51,19 +50,12 @@ function getMintAddress(): PublicKey {
  * Returns the instruction data to create a genesis account
  */
 export function createGenesis(amount: number): Buffer {
-  const layout = lo.struct([
-    lo.u32('instruction'),
-    lo.nu64('length'),
-    lo.u32('command'),
-    lo.nu64('amount'),
-  ]);
+  const layout = lo.struct([lo.u32('instruction'), lo.nu64('amount')]);
 
   const buffer = Buffer.alloc(layout.span);
   layout.encode(
     {
-      instruction: Instruction.InvokeMain,
-      length: 4 + 8, // command + amount
-      command: Command.CreateGenesis,
+      instruction: Instruction.CreateGenesis,
       amount,
     },
     buffer,
@@ -81,24 +73,15 @@ export function runScript(
 ): Buffer {
   const layout = lo.struct([
     lo.u32('instruction'),
-    lo.nu64('commandLength'),
-    lo.u32('command'),
     publicKeyLayout('senderAddress'),
     lo.nu64('functionNameLength'),
     lo.blob(functionName.length, 'functionName'),
   ]);
 
-  // 12 = 4 bytes for instruction and 8 for length itself
-  let commandLength = layout.span - 12;
-  if (args) {
-    commandLength += args.length;
-  }
   var buffer = Buffer.alloc(layout.span);
   layout.encode(
     {
-      instruction: Instruction.InvokeMain,
-      commandLength: commandLength,
-      command: Command.RunScript,
+      instruction: Executable.RunScript,
       senderAddress: senderPublicKey.toBuffer(),
       functionNameLength: functionName.length,
       functionName: Buffer.from(functionName, 'ascii'),
@@ -120,8 +103,6 @@ export function runMintToAddress(
 ): Buffer {
   const layout = lo.struct([
     lo.u32('instruction'),
-    lo.nu64('length'),
-    lo.u32('command'),
     publicKeyLayout('senderAddress'),
     lo.nu64('functionNameLength'),
     lo.blob(4, 'functionName'),
@@ -135,9 +116,7 @@ export function runMintToAddress(
   const buffer = Buffer.alloc(layout.span);
   layout.encode(
     {
-      instruction: Instruction.InvokeMain,
-      length: 104, // length of this is specific run script command
-      command: Command.RunScript,
+      instruction: Executable.RunScript,
       senderAddress: getMintAddress().toBuffer(),
       functionNameLength: 4,
       functionName: Buffer.from('main', 'ascii'),
@@ -162,8 +141,6 @@ export function runPayFromSender(
 ): Buffer {
   const layout = lo.struct([
     lo.u32('instruction'),
-    lo.nu64('length'),
-    lo.u32('command'),
     publicKeyLayout('senderAddress'),
     lo.nu64('functionNameLength'),
     lo.blob(4, 'functionName'),
@@ -177,9 +154,7 @@ export function runPayFromSender(
   const buffer = Buffer.alloc(layout.span);
   layout.encode(
     {
-      instruction: Instruction.InvokeMain,
-      length: 104, // length of this is specific run script command
-      command: Command.RunScript,
+      instruction: Executable.RunScript,
       senderAddress: senderPublicKey.toBuffer(),
       functionNameLength: 4,
       functionName: Buffer.from('main', 'ascii'),
