@@ -34,16 +34,18 @@ The example connects to a local Solana cluster by default.
 
 To enable on-chain Move loader/VM logs, set the `RUST_LOG` environment variable:
 
-`$ export solana_runtime::native_loader=trace,solana_runtime::system_instruction_processor=trace,solana_runtime::bank=debug,solana_bpf_loader=debug,solana_rbpf=debug`
+```sh
+$ export solana_runtime::native_loader=trace,solana_runtime::system_instruction_processor=trace,solana_runtime::bank=debug,solana_bpf_loader=debug,solana_rbpf=debug
+```
 
 To start a local Solana cluster run:
-```bash
+```sh
 $ npm run localnet:update
 $ npm run localnet:up
 ```
 
 Solana cluster logs are available with:
-```bash
+```sh
 $ npm run localnet:logs
 ```
 
