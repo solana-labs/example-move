@@ -83,7 +83,7 @@ export class MoveLoader {
 
     const bytes = await fs.readFile(path);
 
-    const [, feeCalculator] = await connection.getRecentBlockhash();
+    const {feeCalculator} = await connection.getRecentBlockhash();
     const fees =
       feeCalculator.lamportsPerSignature *
         (MoveLoader.getMinNumSignatures(bytes.length) + NUM_RETRIES) +
