@@ -30,13 +30,13 @@ export async function createAccount(
   const transaction = new Transaction();
 
   transaction.add(
-    SystemProgram.createAccount(
-      payerAccount.publicKey,
-      newAccount.publicKey,
-      5000, // enough to cover rent
-      size,
-      MoveLoader.programId,
-    ),
+    SystemProgram.createAccount({
+      fromPubkey: payerAccount.publicKey,
+      newAccountPubkey: newAccount.publicKey,
+      lamports: 5000, // enough to cover rent
+      space: size,
+      programId: MoveLoader.programId,
+    }),
   );
 
   await sendAndConfirmTransaction(
