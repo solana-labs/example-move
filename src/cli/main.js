@@ -32,7 +32,7 @@ import {newSystemAccountWithAirdrop} from '../util/new-system-account-with-airdr
  * requires the module address to be referenced by the calling script:
  *   'import 0x1b2f49096e3e5dbd0fcfa9c0c0cd92d9ab3b21544b34d5dd4a65d98b878b9922.M;'
  *
- * To support a since command programmatic example we define the module's secret key.
+ * To support programmatic example we define the module's secret key.
  * The key is used to publish module here and its derived public key is provided to the
  * compiler when building the module and in the example script.mvir script.
  */
