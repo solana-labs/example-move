@@ -97,9 +97,7 @@ export async function publishModule(
   moduleAccount: Account,
   path: string,
 ): Promise<void> {
-  try {
-    await connection.getAccountInfo(moduleAccount.publicKey);
-  } catch (e) {
+  if (null === await connection.getAccountInfo(moduleAccount.publicKey)) {
     return MoveLoader.load(
       connection,
       AccountType.CompiledModule,
@@ -316,6 +314,9 @@ export async function getLibraBalance(
   ]);
 
   const accountInfo = await connection.getAccountInfo(publicKey);
+  if (accountInfo === null) {
+    throw 'Cannot find libra account';
+  }
   const info = layout.decode(accountInfo.data);
   return info.balance;
 }
